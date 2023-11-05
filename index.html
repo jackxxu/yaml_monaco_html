@@ -2,27 +2,76 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>YAML Editor</title>
-    <!-- Include Monaco Editor's CSS -->
+    <title>Custom YAML Editor</title>
     <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.css">
 </head>
 <body>
     <div id="yaml-editor" style="width: 800px; height: 400px;"></div>
 
-    <!-- Include Monaco Editor's JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
     <script>
         require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
 
         require(['vs/editor/editor.main'], function() {
-            var editor = monaco.editor.create(document.getElementById('yaml-editor'), {
-                value: 'Your YAML content goes here',
-                language: 'yaml',
-                fontSize: 16, 
-                theme: 'vs-dark',
+            // Define your custom YAML schema
+            const customYAMLSchema = {
+                // Your custom schema definition here
+            };
+
+            // Register the custom YAML language
+            monaco.languages.register({ id: 'custom-yaml' });
+
+            // Set up the editor language configuration
+            monaco.languages.setLanguageConfiguration('custom-yaml', {
+                comments: {
+                    lineComment: '#',
+                },
+                brackets: [['{', '}'], ['[', ']'], ['(', ')']],
+                autoClosingPairs: [
+                    { open: '{', close: '}' },
+                    { open: '[', close: ']' },
+                    { open: '(', close: ')' },
+                ],
             });
 
-            // You can add event handlers and perform additional configuration here.
+            // Register the custom schema with Monaco Editor
+            monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                validate: true,
+                schemas: [
+                    {
+                        uri: 'http://example.com/custom-yaml-schema.json',
+                        fileMatch: ['*'],
+                        schema: customYAMLSchema,
+                    },
+                ],
+            });
+
+            // Register autocompletion for the custom YAML language
+            monaco.languages.registerCompletionItemProvider('custom-yaml', {
+                provideCompletionItems: (model, position) => {
+                    // Implement autocompletion logic here based on your schema
+                    return {
+                        suggestions: [
+                            {
+                                label: 'Option 1',
+                                kind: monaco.languages.CompletionItemKind.Keyword,
+                            },
+                            {
+                                label: 'Option 2',
+                                kind: monaco.languages.CompletionItemKind.Keyword,
+                            },
+                        ],
+                    };
+                },
+            });
+
+            // Create the Monaco Editor instance
+            var editor = monaco.editor.create(document.getElementById('yaml-editor'), {
+                value: 'a: 1\nb: 2',
+                language: 'custom-yaml',
+                fontSize: 16,
+                theme: 'vs-dark',
+            });
         });
     </script>
 </body>
